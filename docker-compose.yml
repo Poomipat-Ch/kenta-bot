@@ -1,0 +1,17 @@
+version: '3.8'
+services:
+  joke-http:
+    build:
+      context: docker/app
+    volumes:
+      - ./internal:/internal
+      - ./.go/pkg:/go/pkg
+      - ./.go-cache:/go-cache
+    working_dir: /internal/joke
+    ports:
+      - "127.0.0.1:3002:$PORT"
+    environment:
+      SERVER_TO_RUN: http
+      GOCACHE: /go-cache
+    env_file:
+      - .env
