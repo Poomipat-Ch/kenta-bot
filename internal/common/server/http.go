@@ -10,14 +10,15 @@ import (
 	"github.com/go-chi/chi/v5/middleware"
 	"github.com/go-chi/cors"
 	"github.com/rs/zerolog"
+	"github.com/rs/zerolog/hlog"
 	"github.com/rs/zerolog/log"
 )
 
-func RunHTTPServer(logger *zerolog.Logger, createHandler func(router chi.Router) http.Handler) {
+func RunHTTPServer(logger *zerolog.ConsoleWriter, createHandler func(router chi.Router) http.Handler) {
 	RunHTTPServerOnAddr(":"+os.Getenv("PORT"), logger, createHandler)
 }
 
-func RunHTTPServerOnAddr(addr string, logger *zerolog.Logger, createHandler func(router chi.Router) http.Handler) {
+func RunHTTPServerOnAddr(addr string, logger *zerolog.ConsoleWriter, createHandler func(router chi.Router) http.Handler) {
 	apiRouter := chi.NewRouter()
 	setMiddlewares(apiRouter, logger)
 
@@ -26,18 +27,20 @@ func RunHTTPServerOnAddr(addr string, logger *zerolog.Logger, createHandler func
 	// mouting all APIs under /api path
 	rootRouter.Mount("/api", createHandler(apiRouter))
 
-	log.Info().Msg("Starting HTTP server on " + addr)
+	log.Logger.Info().Msg("Starting HTTP server on " + addr)
 
 	err := http.ListenAndServe(addr, rootRouter)
 	if err != nil {
-		log.Panic().Err(err).Msg("Failed to start HTTP server")
+		log.Logger.Panic().Err(err).Msg("Failed to start HTTP server")
 	}
 }
 
-func setMiddlewares(router *chi.Mux, logger *zerolog.Logger) {
+func setMiddlewares(router *chi.Mux, logger *zerolog.ConsoleWriter) {
 	router.Use(middleware.RequestID)
 	router.Use(middleware.RealIP)
-	router.Use(logs.NewStructuredLogger(logger))
+	router.Use(hlog.NewHandler(log.Logger))
+	router.Use(hlog.AccessHandler(logs.LogRequestHandler))
+	// router.Use(logs.NewStructuredLogger(zerolog.New(logger).With().Timestamp().Logger()))
 	router.Use(middleware.Recoverer)
 
 	addCorsMiddleware(router)
