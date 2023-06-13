@@ -7,9 +7,10 @@ import (
 	"strings"
 
 	"github.com/rs/zerolog"
+	"github.com/rs/zerolog/log"
 )
 
-func Init() *zerolog.Logger {
+func Init() *zerolog.ConsoleWriter {
 	zerolog.TimeFieldFormat = zerolog.TimeFormatUnix
 	debug := flag.Bool("debug", false, "sets log level to debug")
 
@@ -22,9 +23,9 @@ func Init() *zerolog.Logger {
 
 	output := setFormat()
 
-	log := zerolog.New(output).With().Timestamp().Logger()
+	log.Logger = log.Output(output)
 
-	return &log
+	return output
 }
 
 func setFormat() *zerolog.ConsoleWriter {

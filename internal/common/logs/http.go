@@ -6,10 +6,11 @@ import (
 
 	"github.com/go-chi/chi/v5/middleware"
 	"github.com/rs/zerolog"
+	"github.com/rs/zerolog/hlog"
 )
 
-func NewStructuredLogger(logger *zerolog.Logger) func(next http.Handler) http.Handler {
-	return middleware.RequestLogger(&StructuredLogger{logger})
+func NewStructuredLogger(logger zerolog.Logger) func(next http.Handler) http.Handler {
+	return middleware.RequestLogger(&StructuredLogger{&logger})
 }
 
 type StructuredLogger struct {
@@ -52,4 +53,14 @@ func (l *StructuredLoggerEntry) Write(status, bytes int, header http.Header, ela
 
 func (l *StructuredLoggerEntry) Panic(v interface{}, stack []byte) {
 	l.Logger.Error().Msgf("panic: %v", v)
+}
+
+func LogRequestHandler(r *http.Request, status, size int, duration time.Duration) {
+	hlog.FromRequest(r).Info().
+		Str("method", r.Method).
+		Str("url", r.URL.String()).
+		Int("status", status).
+		Int("size", size).
+		Dur("duration", duration).
+		Msg("")
 }
