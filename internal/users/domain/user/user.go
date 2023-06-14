@@ -1,6 +1,9 @@
 package user
 
-import "errors"
+import (
+	commonerrors "github.com/Poomipat-Ch/kenta-bot/internal/common/errors"
+	"github.com/pkg/errors"
+)
 
 type User struct {
 	UUID        string
@@ -39,18 +42,22 @@ func NewUser(uuid, username, displayname, email, picture, password string) (*Use
 	}, nil
 }
 
+var ErrDisplaynameCannotBeEmpty = commonerrors.NewInvalidInputError("displayname cannot be empty", "displayname-cannot-be-empty")
+
 func (u *User) UpdateDisplayname(displayname string) error {
 	if displayname == "" {
-		return errors.New("displayname cannot be empty")
+		return errors.WithStack(ErrDisplaynameCannotBeEmpty)
 	}
 
 	u.Displayname = displayname
 	return nil
 }
 
+var ErrPasswordCannotBeEmpty = commonerrors.NewInvalidInputError("password cannot be empty", "password-cannot-be-empty")
+
 func (u *User) UpdatePassword(password string) error {
 	if password == "" {
-		return errors.New("password cannot be empty")
+		return errors.WithStack(ErrPasswordCannotBeEmpty)
 	}
 
 	u.Password = password
