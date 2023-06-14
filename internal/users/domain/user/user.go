@@ -3,12 +3,12 @@ package user
 import "errors"
 
 type User struct {
-	uuid        string
-	username    string
-	displayname string
-	email       string
-	picture     string
-	password    string
+	UUID        string
+	Username    string
+	Displayname string
+	Email       string
+	Picture     string
+	Password    string
 }
 
 func NewUser(uuid, username, displayname, email, picture, password string) (*User, error) {
@@ -30,12 +30,12 @@ func NewUser(uuid, username, displayname, email, picture, password string) (*Use
 	}
 
 	return &User{
-		uuid:        uuid,
-		username:    username,
-		displayname: displayname,
-		email:       email,
-		picture:     picture,
-		password:    password,
+		UUID:        uuid,
+		Username:    username,
+		Displayname: displayname,
+		Email:       email,
+		Picture:     picture,
+		Password:    password,
 	}, nil
 }
 
@@ -44,7 +44,7 @@ func (u *User) UpdateDisplayname(displayname string) error {
 		return errors.New("displayname cannot be empty")
 	}
 
-	u.displayname = displayname
+	u.Displayname = displayname
 	return nil
 }
 
@@ -53,6 +53,18 @@ func (u *User) UpdatePassword(password string) error {
 		return errors.New("password cannot be empty")
 	}
 
-	u.password = password
+	u.Password = password
 	return nil
+}
+
+func UnmarshalUserFromDatabase(
+	uuid, username, displayname, email, picture, password string,
+) (*User, error) {
+	user, err := NewUser(uuid, username, displayname, email, picture, password)
+
+	if err != nil {
+		return nil, err
+	}
+
+	return user, nil
 }

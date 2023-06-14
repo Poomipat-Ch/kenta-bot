@@ -6,11 +6,11 @@ import (
 )
 
 type NotFoundError struct {
-	UserUUID string
+	UserIdentity string
 }
 
 func (e NotFoundError) Error() string {
-	return fmt.Sprintf("User '%s' not found", e.UserUUID)
+	return fmt.Sprintf("User '%s' not found", e.UserIdentity)
 }
 
 type Repository interface {
@@ -18,5 +18,5 @@ type Repository interface {
 	FindByUsername(ctx context.Context, username string) (*User, error)
 	FindByEmail(ctx context.Context, email string) (*User, error)
 	Store(ctx context.Context, user *User) error
-	Update(ctx context.Context, uuid string, user User)
+	Update(ctx context.Context, uuid string, user *User) error
 }
