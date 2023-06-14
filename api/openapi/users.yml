@@ -1,0 +1,115 @@
+openapi: "3.0.0"
+info:
+  version: 1.0.0
+  title: Kenta's User API
+  description: APIs for user management
+  contact:
+    name: Kenta420
+    email: poomipat002@gmial.com
+    url: https://github.com/Poomipat-Ch
+servers:
+  - url: http://{hostname}/api
+    variables:
+      hostname:
+        default: localhost
+security:
+  - bearerAuth: []
+paths:
+  /users/me:
+    get:
+      summary: Get a User info from token
+      operationId: getMe
+      tags:
+        - Users
+      responses:
+        "200":
+          description: OK
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/User"
+        "401":
+          description: Unauthorized
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Error"
+  /users/login:
+    post:
+      summary: Login a user
+      operationId: login
+      tags:
+        - Users
+      requestBody:
+        description: User credentials
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required:
+                - email
+                - password
+              properties:
+                email:
+                  type: string
+                password:
+                  type: string
+      responses:
+        "200":
+          description: OK
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/UserToken"
+        "401":
+          description: Unauthorized
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Error"
+
+components:
+  securitySchemes:
+    bearerAuth:
+      type: http
+      scheme: bearer
+      bearerFormat: JWT
+  schemas:
+    User:
+      type: object
+      required:
+        - email
+        - username
+      properties:
+        email:
+          type: string
+        username:
+          type: string
+        displayname:
+          type: string
+        picture:
+          type: string
+
+    UserToken:
+      type: object
+      required:
+        - token
+        - expries_in
+      properties:
+        token:
+          type: string
+        expries_in:
+          type: integer
+          format: int64
+
+    Error:
+      type: object
+      required:
+        - slug
+        - message
+      properties:
+        slug:
+          type: string
+        message:
+          type: string

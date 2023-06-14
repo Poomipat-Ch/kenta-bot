@@ -29,7 +29,7 @@ func Init() *zerolog.ConsoleWriter {
 }
 
 func setFormat() *zerolog.ConsoleWriter {
-	output := zerolog.ConsoleWriter{Out: os.Stderr}
+	output := zerolog.ConsoleWriter{Out: os.Stderr, NoColor: true}
 	output.FormatLevel = func(i interface{}) string {
 		return strings.ToUpper(fmt.Sprintf("| %-6s|", i))
 	}
