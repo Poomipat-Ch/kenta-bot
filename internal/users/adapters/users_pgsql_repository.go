@@ -8,12 +8,12 @@ import (
 	"github.com/Poomipat-Ch/kenta-bot/internal/users/domain/user"
 )
 
-type userPgsqlRepository struct {
+type usersPgsqlRepository struct {
 	pgsql *sql.DB
 }
 
 // FindByEmail implements user.Repository.
-func (u *userPgsqlRepository) FindByEmail(ctx context.Context, email string) (*user.User, error) {
+func (u *usersPgsqlRepository) FindByEmail(ctx context.Context, email string) (*user.User, error) {
 	ctx, cancel := context.WithTimeout(ctx, 5*time.Second)
 	defer cancel()
 
@@ -31,7 +31,7 @@ func (u *userPgsqlRepository) FindByEmail(ctx context.Context, email string) (*u
 }
 
 // FindByUUID implements user.Repository.
-func (u *userPgsqlRepository) FindByUUID(ctx context.Context, uuid string) (*user.User, error) {
+func (u *usersPgsqlRepository) FindByUUID(ctx context.Context, uuid string) (*user.User, error) {
 	ctx, cancel := context.WithTimeout(ctx, 5*time.Second)
 	defer cancel()
 
@@ -49,7 +49,7 @@ func (u *userPgsqlRepository) FindByUUID(ctx context.Context, uuid string) (*use
 }
 
 // FindByUsername implements user.Repository.
-func (u *userPgsqlRepository) FindByUsername(ctx context.Context, username string) (*user.User, error) {
+func (u *usersPgsqlRepository) FindByUsername(ctx context.Context, username string) (*user.User, error) {
 	ctx, cancel := context.WithTimeout(ctx, 5*time.Second)
 	defer cancel()
 
@@ -67,7 +67,7 @@ func (u *userPgsqlRepository) FindByUsername(ctx context.Context, username strin
 }
 
 // Store implements user.Repository.
-func (u *userPgsqlRepository) Store(ctx context.Context, user *user.User) error {
+func (u *usersPgsqlRepository) Store(ctx context.Context, user *user.User) error {
 	ctx, cancel := context.WithTimeout(ctx, 5*time.Second)
 	defer cancel()
 
@@ -91,7 +91,7 @@ func (u *userPgsqlRepository) Store(ctx context.Context, user *user.User) error 
 }
 
 // Update implements user.Repository.
-func (u *userPgsqlRepository) Update(ctx context.Context, uuid string, user *user.User) error {
+func (u *usersPgsqlRepository) Update(ctx context.Context, uuid string, user *user.User) error {
 	ctx, cancel := context.WithTimeout(ctx, 5*time.Second)
 	defer cancel()
 
@@ -102,6 +102,31 @@ func (u *userPgsqlRepository) Update(ctx context.Context, uuid string, user *use
 	}
 
 	_, err = u.pgsql.ExecContext(ctx, "UPDATE users SET username = $1, displayname = $2, email = $3, picture = $4, password = $5 WHERE uuid = $6", user.Username, user.Displayname, user.Email, user.Picture, user.Password, uuid)
+
+	if err != nil {
+		tx.Rollback()
+		return err
+	}
+
+	if err := tx.Commit(); err != nil {
+		return err
+	}
+
+	return nil
+}
+
+// Delete implements user.Repository.
+func (u *usersPgsqlRepository) Delete(ctx context.Context, uuid string) error {
+	ctx, cancel := context.WithTimeout(ctx, 5*time.Second)
+	defer cancel()
+
+	tx, err := u.pgsql.Begin()
+
+	if err != nil {
+		return err
+	}
+
+	_, err = u.pgsql.ExecContext(ctx, "DELETE FROM users WHERE uuid = $1", uuid)
 
 	if err := tx.Commit(); err != nil {
 		return err
@@ -114,8 +139,8 @@ func (u *userPgsqlRepository) Update(ctx context.Context, uuid string, user *use
 	return nil
 }
 
-func NewUserPgsqlRepository(pgsql *sql.DB) user.Repository {
-	return &userPgsqlRepository{
+func NewUsersPgsqlRepository(pgsql *sql.DB) user.Repository {
+	return &usersPgsqlRepository{
 		pgsql: pgsql,
 	}
 }
